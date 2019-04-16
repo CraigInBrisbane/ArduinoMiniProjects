@@ -5,31 +5,27 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-
+// Pin Declarations
 int RED_PIN = 9;
 int GREEN_PIN = 11;
 int BUZZER_PIN = 13;
 int PIR_PIN = 2;
+int OLED_RESET = 4; // Reset pin # (or -1 if sharing Arduino reset pin)
 
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 32 // OLED display height, in pixels
-
 // Pallete - Where you assign names to colors you like
 #define BACKCOLOR 0xFFFF // White
 #define LINECOLOR 0x0000
 
-// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-#define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
-
-bool lastStateIsMovement = false;
-
+// Instantiate the objects we'll be using.
 PirSensor pir(PIR_PIN);
 FlashingLed green(GREEN_PIN, 50, 3000);
 LED red(RED_PIN);
 Buzzer buzzer(BUZZER_PIN);
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
 
 void drawBox(int topLeftX, int topLeftY, int bottomRightX, int bottomRightY) {
   display.drawLine(topLeftX, topLeftY, topLeftX, bottomRightY, WHITE);
@@ -65,7 +61,6 @@ void ShowScreen(String state, int Movements, bool indicatorOn) {
   display.display();
 }
 
-
 void setup() {
   Serial.begin(9600);
   pinMode(BUZZER_PIN, OUTPUT);
@@ -79,11 +74,14 @@ void setup() {
 
 }
 
+// Variables used in the loops.
+bool lastStateIsMovement = false;
 int MovementCount = 0;
 unsigned long pause = 500;
 unsigned long lastMillis = 0;
 bool isOn = true;
-  String statusText = "";
+String statusText = "STILL";
+
 
 void loop() {
   // Read the movement sensor
@@ -95,8 +93,6 @@ void loop() {
     lastMillis = millis();
     ShowScreen(statusText, MovementCount, isOn);
   }
-
- // Serial.println(isOn);
 
   // Was there movement and has this changed?  
   if(movement && lastStateIsMovement == false)
