@@ -77,7 +77,7 @@ void setup() {
 // Variables used in the loops.
 bool lastStateIsMovement = false;
 int MovementCount = 0;
-unsigned long pause = 500;
+unsigned long pause = 1000;
 unsigned long lastMillis = 0;
 bool isOn = true;
 String statusText = "STILL";
