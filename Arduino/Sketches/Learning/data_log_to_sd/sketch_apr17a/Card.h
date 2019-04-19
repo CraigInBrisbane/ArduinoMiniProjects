@@ -15,22 +15,14 @@ class Card {
 
   public:
 
-  Card() {
-    
-  }
-
-  
-
   bool Initialise(int cs_pin, int led_pin)
   {
     CS_PIN = cs_pin;
     LED_PIN = led_pin;
-    Serial.println(led_pin);
     led.Init(LED_PIN, 50, 50);
     led.On();
     Serial.println("Initializing SD card...");
     pinMode(CS_PIN, OUTPUT);
-
     if (SD.begin())
     {
       led.Off();
@@ -45,12 +37,10 @@ class Card {
   bool OpenFile(String filename)
   {
     led.On();  
-    file = SD.open(filename);
+    file = SD.open(filename, FILE_WRITE);
     if (file)
     {
-      Serial.print("File '");
-      Serial.print(filename);
-      Serial.println("' opened.");
+      Serial.println("File open...");
       led.Off();
       return true;
     }
@@ -80,6 +70,9 @@ class Card {
   
   bool WriteToFile(String text)
   {
+    Serial.print("Writing to SD card: ");
+    Serial.println(text);
+    
     led.On();
     if (file)
     {

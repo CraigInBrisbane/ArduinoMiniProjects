@@ -9,9 +9,6 @@ class FlashingLed {
   unsigned long previousMillis;
 
   public:
-  FlashingLed() {
-  }
-
   void Init(int LedPin, long On, long Off) {
     Serial.print("Executing led.Init()... pin is ");
     Serial.println(LedPin);
@@ -28,16 +25,12 @@ class FlashingLed {
     
     if((state == HIGH) and (currentMillis - previousMillis >= onTime)) {
       state = LOW;
-      //Serial.print("Going Low");
-      //Serial.println(state);
       previousMillis = currentMillis;
       digitalWrite(ledPin, state);
     } 
     else
     if((state==LOW) and (currentMillis - previousMillis >= offTime)) {
-      //Serial.println("Going High");
       state = HIGH;
-      //Serial.println(state);
       previousMillis = currentMillis;
       digitalWrite(ledPin, state);
     }

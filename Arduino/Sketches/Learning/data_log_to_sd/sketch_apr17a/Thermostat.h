@@ -16,11 +16,13 @@ class Thermostat {
 
 
   public:
-  Thermostat(int pin, float resistor, unsigned long samplePeriod) {
+  void Init(int pin, float resistor, unsigned long samplePeriod) {
+    Serial.print("Thermostat initialising on pin ");
+    Serial.println(pin);
     ThermistorPin = pin;
     R1 = resistor;
     SamplePeriod = samplePeriod;
-    pinMode(ThermistorPin, OUTPUT);
+    pinMode(ThermistorPin, INPUT);
   }
 
   int readCount = 0;
@@ -33,6 +35,13 @@ class Thermostat {
    */
   float Read() {
       Vo = analogRead(ThermistorPin);
+      Serial.print("Voltage off thermostat: ");
+      Serial.print(Vo);
+      Serial.print(", with resistor value of ");
+      Serial.print(R1);
+      Serial.print(", on pin ");
+      Serial.println(ThermistorPin);
+      
       R2 = R1 * (1023.0 / (float)Vo - 1.0);
       logR2 = log(R2);
       T = (1.0 / (c1 + c2*logR2 + c3*logR2*logR2*logR2));
