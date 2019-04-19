@@ -86,7 +86,7 @@ void setup() {
 }
 
 // Global variables.
-unsigned long pauseTime = 10;
+unsigned long pauseTime = 1000;
 unsigned long lastMillis = 0;
 float maxTemp = -500;
 float minTemp = 500;
