@@ -1,6 +1,8 @@
+//#include <SD.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Fonts/FreeSans9pt7b.h>
+
 #include "Thermostat.h"
 
 int OLED_RESET = 4; // Reset pin # (or -1 if sharing Arduino reset pin)
@@ -10,6 +12,78 @@ int THERMOSTAT_PIN = 0;
 #define SCREEN_HEIGHT 32 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+int CS_PIN = 4;
+
+// File file;
+
+void initializeSD()
+{
+  Serial.println("Initializing SD card...");
+  pinMode(CS_PIN, OUTPUT);
+
+  if (SD.begin())
+  {
+    Serial.println("SD card is ready to use.");
+  } else
+  {
+    Serial.println("SD card initialization failed");
+    return;
+  }
+}
+
+int openFile(char filename[])
+{
+  file = SD.open(filename);
+  if (file)
+  {
+    Serial.println("File opened with success!");
+    return 1;
+  } else
+  {
+    Serial.println("Error opening file...");
+    return 0;
+  }
+}
+
+int createFile(String filename)
+{
+  file = SD.open(filename, FILE_WRITE);
+
+  if (file)
+  {
+    Serial.println("File created successfully.");
+    return 1;
+  } else
+  {
+    Serial.println("Error while creating file.");
+    return 0;
+  }
+}
+
+
+int writeToFile(String text)
+{
+  if (file)
+  {
+    file.println(text);
+    Serial.println("Writing to file: ");
+    Serial.println(text);
+    return 1;
+  } else
+  {
+    Serial.println("Couldn't write to file");
+    return 0;
+  }
+}
+
+void closeFile()
+{
+  if (file)
+  {
+    file.close();
+    Serial.println("File closed");
+  }
+}
 
 void displayDetails(float temp, float minTemp, float maxTemp) {
   
@@ -66,11 +140,17 @@ void displayDetails(float temp, float minTemp, float maxTemp) {
 }
 
 // Create the devices.
-Thermostat thermostat(THERMOSTAT_PIN, 100000, 4000);
+Thermostat thermostat(THERMOSTAT_PIN, 10000, 5000);
 
 void setup() {
   
   Serial.begin(9600);
+  initializeSD();
+
+  createFile("text.txt");
+  writeToFile("Initialised");
+  closeFile();
+   
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
     Serial.println(F("SSD1306 allocation failed"));
     for(;;); // Don't proceed, loop forever
@@ -87,24 +167,23 @@ void setup() {
 
 // Global variables.
 unsigned long pauseTime = 1000;
-unsigned long lastMillis = 0;
 float maxTemp = -500;
 float minTemp = 500;
 
 void loop() {
 
-  unsigned long currentMillis = millis();
-  if(currentMillis - lastMillis > pauseTime) {
-    float currentTemp = thermostat.Read();
-    if(currentTemp > maxTemp) {
-      maxTemp = currentTemp;
-    }
-
-    if(currentTemp < minTemp) {
-      minTemp = currentTemp;
-    }
-    displayDetails(currentTemp, minTemp, maxTemp);
-    lastMillis = millis();
-    
+  delay(1000);
+//  Serial.println(analogRead(THERMOSTAT_PIN));
+  float currentTemp = thermostat.Read();
+ 
+  if(currentTemp > maxTemp) {
+    maxTemp = currentTemp;
   }
+
+  if(currentTemp < minTemp) {
+    minTemp = currentTemp;
+  }
+  Serial.println(currentTemp);
+  displayDetails(currentTemp, minTemp, maxTemp);
+   
 }
