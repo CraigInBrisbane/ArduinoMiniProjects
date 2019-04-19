@@ -1,33 +1,15 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Fonts/FreeSans9pt7b.h>
+#include "Thermostat.h"
 
 int OLED_RESET = 4; // Reset pin # (or -1 if sharing Arduino reset pin)
+int THERMOSTAT_PIN = 0;
 
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 32 // OLED display height, in pixels
-// Pallete - Where you assign names to colors you like
-#define BACKCOLOR 0xFFFF // White
-#define LINECOLOR 0x0000
-
+#define SCREEN_WIDTH 128 
+#define SCREEN_HEIGHT 32 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-int ThermistorPin = 0;
-int Vo;
-float R1 = 100000;
-float logR2, R2, T;
-float c1 = 1.009249522e-03, c2 = 2.378405444e-04, c3 = 2.019202697e-07;
-
-float readTemperature() {
-
-  Vo = analogRead(ThermistorPin);
-  R2 = R1 * (1023.0 / (float)Vo - 1.0);
-  logR2 = log(R2);
-  T = (1.0 / (c1 + c2*logR2 + c3*logR2*logR2*logR2));
-  T = T - 273.15;
-
-  return T;
-}
 
 void displayDetails(float temp, float minTemp, float maxTemp) {
   
@@ -43,7 +25,7 @@ void displayDetails(float temp, float minTemp, float maxTemp) {
   String pressure = "P 1080 hPa";
 
   display.setCursor(0,0);
-  display.println(tempString);
+  display.print(tempString);
 
   display.setTextSize(1);
   display.setCursor(0, 17);
@@ -83,15 +65,17 @@ void displayDetails(float temp, float minTemp, float maxTemp) {
 
 }
 
+// Create the devices.
+Thermostat thermostat(THERMOSTAT_PIN, 100000, 4000);
+
 void setup() {
-  // put your setup code here, to run once:
- 
-  pinMode(ThermistorPin, OUTPUT);
+  
   Serial.begin(9600);
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
     Serial.println(F("SSD1306 allocation failed"));
     for(;;); // Don't proceed, loop forever
   }
+
   display.clearDisplay();
   display.setCursor(0,0);
   display.setFont();
@@ -101,16 +85,17 @@ void setup() {
   display.display();
 }
 
-unsigned long pauseTime = 3000;
+// Global variables.
+unsigned long pauseTime = 10;
 unsigned long lastMillis = 0;
 float maxTemp = -500;
 float minTemp = 500;
 
 void loop() {
-  // put your main code here, to run repeatedly:
+
   unsigned long currentMillis = millis();
   if(currentMillis - lastMillis > pauseTime) {
-    float currentTemp = readTemperature();
+    float currentTemp = thermostat.Read();
     if(currentTemp > maxTemp) {
       maxTemp = currentTemp;
     }
